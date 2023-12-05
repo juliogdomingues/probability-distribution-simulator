@@ -32,8 +32,8 @@ opcoes_distribuicoes = ['Binomial', 'Exponencial', 'Uniforme', 'Normal', 'Qui-qu
 distribuicoes_selecionadas = st.multiselect('Escolha as distribuições para simular:', opcoes_distribuicoes, default=opcoes_distribuicoes)
 
 # Sliders para escolher número e tamanho das amostras
-m = st.slider('Número de amostras (m):', 1, 5, 10, 50, 100, 5000)
-n = st.slider('Tamanho da amostra (n):', 1, 5, 10, 30, 100)
+m = st.slider('Número de amostras (m):', 1, 5000, 1000, 1)
+n = st.slider('Tamanho da amostra (n):', 1, 100, 30, 1)
 
 # Parâmetros das distribuições
 p_binomial = 0.05
