@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
@@ -31,9 +29,20 @@ st.title("Simulação de Distribuições")
 opcoes_distribuicoes = ['Binomial', 'Exponencial', 'Uniforme', 'Normal', 'Qui-quadrado', 'Poisson', 't de Student']
 distribuicoes_selecionadas = st.multiselect('Escolha as distribuições para simular:', opcoes_distribuicoes, default=opcoes_distribuicoes)
 
-# Sliders para escolher número e tamanho das amostras
-m = st.slider('Número de amostras (m):', 100, 5000, 1000, 100)
-n = st.slider('Tamanho da amostra (n):', 10, 100, 30, 10)
+# Sliders e entradas numéricas para número e tamanho das amostras
+col1, col2, col3, col4 = st.columns(4)
+with col1:
+    m = st.slider('Slider - Número de amostras (m):', 1, 5000, 1000)
+with col2:
+    m_input = st.number_input('Entrada - Número de amostras (m):', min_value=1, max_value=5000, value=m)
+with col3:
+    n = st.slider('Slider - Tamanho da amostra (n):', 1, 100, 30)
+with col4:
+    n_input = st.number_input('Entrada - Tamanho da amostra (n):', min_value=1, max_value=100, value=n)
+
+# Usar valores das entradas numéricas para a simulação
+m = m_input
+n = n_input
 
 # Parâmetros das distribuições
 p_binomial = 0.05
@@ -43,6 +52,11 @@ mu_normal, sigma_normal = 0, 1
 df_chi2 = 2
 l_poisson = 3
 df_t = 5
+  
+# # Sliders para escolher número e tamanho das amostras
+# m = st.slider('Número de amostras (m):', 100, 5000, 1000, 100)
+# n = st.slider('Tamanho da amostra (n):', 10, 100, 30, 10)
+
 
 # Botão para executar a simulação
 if st.button('Executar Simulação'):
