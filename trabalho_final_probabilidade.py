@@ -9,81 +9,74 @@ def gerar_amostras_e_medias(dist_func, n, m, *params):
     medias_amostrais = amostras.mean(axis=1)
     return amostras, medias_amostrais
 
-# Função para plotar histogramas
-def plot_histogram(medias, title, dist_name, dist_params):
-    plt.figure()
-    plt.hist(medias, bins=30, density=True, alpha=0.6, color='g')
-    mu, sigma = np.mean(medias), np.std(medias)
+# Função para padronizar as médias amostrais
+def padronizar_medias(medias, media_verdadeira, desvio_padrao_verdadeiro, tamanho_amostra):
+    return (medias - media_verdadeira) / (desvio_padrao_verdadeiro / np.sqrt(tamanho_amostra))
+
+# Função para plotar ambos os histogramas lado a lado
+def plot_histograms_lado_a_lado(amostras, medias_padronizadas, title):
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+
+    # Histograma das amostras originais
+    ax1.hist(amostras.flatten(), bins=30, density=True, alpha=0.6, color='b')
+    ax1.set_title(f'Histograma das Amostras - {title}')
+    ax1.set_xlabel('Amostras')
+    ax1.set_ylabel('Densidade')
+    ax1.grid(True)
+
+    # Histograma das médias amostrais padronizadas
+    ax2.hist(medias_padronizadas, bins=30, density=True, alpha=0.6, color='g')
+    mu, sigma = np.mean(medias_padronizadas), np.std(medias_padronizadas)
     x = np.linspace(mu - 3*sigma, mu + 3*sigma, 100)
-    plt.plot(x, norm.pdf(x, mu, sigma), 'r', linewidth=2)
-    plt.title(f'Histograma de Médias Amostrais - {title}')
-    plt.xlabel('Média Amostral')
-    plt.ylabel('Densidade')
-    plt.grid(True)
-    st.pyplot(plt)
+    ax2.plot(x, norm.pdf(x, mu, sigma), 'r', linewidth=2)
+    ax2.set_title(f'Histograma de Médias Amostrais - {title}')
+    ax2.set_xlabel('Média Amostral')
+    ax2.set_ylabel('Densidade')
+    ax2.grid(True)
+
+    # Mostrar a figura no Streamlit
+    st.pyplot(fig)
 
 # Streamlit interface
 st.title("Simulação de Distribuições")
 
-# Seleção das distribuições
+# Seleção da distribuição
 opcoes_distribuicoes = ['Binomial', 'Exponencial', 'Uniforme', 'Normal', 'Qui-quadrado', 'Poisson', 't de Student']
-distribuicoes_selecionadas = st.multiselect('Escolha as distribuições para simular:', opcoes_distribuicoes, default=opcoes_distribuicoes)
+distribuicao_selecionada = st.selectbox('Escolha a distribuição para simular:', opcoes_distribuicoes)
 
-# Sliders e entradas numéricas para número e tamanho das amostras
-col1, col2, col3, col4 = st.columns(4)
-with col1:
-    m = st.slider('Slider - Número de amostras (m):', 1, 5000, 1000)
-with col2:
-    m_input = st.number_input('Entrada - Número de amostras (m):', min_value=1, max_value=5000, value=m)
-with col3:
-    n = st.slider('Slider - Tamanho da amostra (n):', 1, 100, 30)
-with col4:
-    n_input = st.number_input('Entrada - Tamanho da amostra (n):', min_value=1, max_value=100, value=n)
+# Sliders para escolher número e tamanho das amostras
+m = st.slider('Número de amostras (m):', 2, 1000, 30)
+n = st.slider('Tamanho da amostra (n):', 2, 1000, 30)
 
-# Usar valores das entradas numéricas para a simulação
-m = m_input
-n = n_input
+# Parâmetros das distribuições com entrada do usuário
+if distribuicao_selecionada == 'Binomial':
+    p_binomial = st.number_input('Probabilidade de sucesso (p):', 0.0, 1.0, 0.5)
+    amostras, medias = gerar_amostras_e_medias(np.random.binomial, n, m, n, p_binomial)
+elif distribuicao_selecionada == 'Exponencial':
+    lambda_exp = st.number_input('Taxa (lambda):', 0.0, 10.0, 1.0)
+    amostras, medias = gerar_amostras_e_medias(np.random.exponential, n, m, 1/lambda_exp)
+elif distribuicao_selecionada == 'Uniforme':
+    a_uniform = st.number_input('Limite inferior (a):', 0.0, 10.0, 0.0)
+    b_uniform = st.number_input('Limite superior (b):', a_uniform, 20.0, 1.0)
+    amostras, medias = gerar_amostras_e_medias(np.random.uniform, n, m, a_uniform, b_uniform)
+elif distribuicao_selecionada == 'Normal':
+    mu_normal = st.number_input('Média (mu):', -10.0, 10.0, 0.0)
+    sigma_normal = st.number_input('Desvio padrão (sigma):', 0.01, 10.0, 1.0)
+    amostras, medias = gerar_amostras_e_medias(np.random.normal, n, m, mu_normal, sigma_normal)
+elif distribuicao_selecionada == 'Qui-quadrado':
+    df_chi2 = st.number_input('Graus de liberdade (df):', 1, 30, 2)
+    amostras, medias = gerar_amostras_e_medias(np.random.chisquare, n, m, df_chi2)
+elif distribuicao_selecionada == 'Poisson':
+    l_poisson = st.number_input('Lambda (taxa de ocorrência):', 0.0, 10.0, 3.0)
+    amostras, medias = gerar_amostras_e_medias(np.random.poisson, n, m, l_poisson)
+elif distribuicao_selecionada == 't de Student':
+    df_t = st.number_input('Graus de liberdade (df):', 1, 30, 5)
+    amostras, medias = gerar_amostras_e_medias(np.random.standard_t, n, m, df_t)
 
-# Parâmetros das distribuições
-p_binomial = 0.05
-lambda_exp = 1.0
-a_uniform, b_uniform = 0, 1
-mu_normal, sigma_normal = 0, 1
-df_chi2 = 2
-l_poisson = 3
-df_t = 5
-  
-# # Sliders para escolher número e tamanho das amostras
-# m = st.slider('Número de amostras (m):', 100, 5000, 1000, 100)
-# n = st.slider('Tamanho da amostra (n):', 10, 100, 30, 10)
+# Cálculo da média e do desvio padrão das médias amostrais
+media_verdadeira = np.mean(amostras) 
+desvio_padrao_verdadeiro = np.std(amostras, ddof=1) / np.sqrt(n)  
 
-
-# Botão para executar a simulação
-if st.button('Executar Simulação'):
-    if 'Binomial' in distribuicoes_selecionadas:
-        amostras_binomial, medias_binomial = gerar_amostras_e_medias(np.random.binomial, n, m, 1, p_binomial)
-        plot_histogram(medias_binomial, 'Binomial', 'Binomial', {'p': p_binomial, 'n': 1})
-
-    if 'Exponencial' in distribuicoes_selecionadas:
-        amostras_exponencial, medias_exponencial = gerar_amostras_e_medias(np.random.exponential, n, m, lambda_exp)
-        plot_histogram(medias_exponencial, 'Exponencial', 'Exponencial', {'lambda': lambda_exp})
-
-    if 'Uniforme' in distribuicoes_selecionadas:
-        amostras_uniforme, medias_uniforme = gerar_amostras_e_medias(np.random.uniform, n, m, a_uniform, b_uniform)
-        plot_histogram(medias_uniforme, 'Uniforme', 'Uniforme', {'a': a_uniform, 'b': b_uniform})
-
-    if 'Normal' in distribuicoes_selecionadas:
-        amostras_normal, medias_normal = gerar_amostras_e_medias(np.random.normal, n, m, mu_normal, sigma_normal)
-        plot_histogram(medias_normal, 'Normal', 'Normal', {'mu': mu_normal, 'sigma': sigma_normal})
-
-    if 'Qui-quadrado' in distribuicoes_selecionadas:
-        amostras_chi2, medias_chi2 = gerar_amostras_e_medias(np.random.chisquare, n, m, df_chi2)
-        plot_histogram(medias_chi2, 'Qui-quadrado', 'Chi-Square', {'df': df_chi2})
-
-    if 'Poisson' in distribuicoes_selecionadas:
-        amostras_poisson, medias_poisson = gerar_amostras_e_medias(np.random.poisson, n, m, l_poisson)
-        plot_histogram(medias_poisson, 'Poisson', 'Poisson', {'lambda': l_poisson})
-
-    if 't de Student' in distribuicoes_selecionadas:
-        amostras_t, medias_t = gerar_amostras_e_medias(np.random.standard_t, n, m, df_t)
-        plot_histogram(medias_t, 't de Student', 't-Student', {'df': df_t})
+# Plotar histograma das médias amostrais padronizadas e comparar com a distribuição normal padrão (0, 1)
+medias_padronizadas = padronizar_medias(medias, media_verdadeira, desvio_padrao_verdadeiro, n)
+plot_histograms_lado_a_lado(amostras, medias_padronizadas, distribuicao_selecionada)
