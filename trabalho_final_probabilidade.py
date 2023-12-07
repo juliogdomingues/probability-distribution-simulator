@@ -45,8 +45,8 @@ opcoes_distribuicoes = ['Binomial', 'Exponencial', 'Uniforme', 'Normal', 'Qui-qu
 distribuicao_selecionada = st.selectbox('Escolha a distribuição para simular:', opcoes_distribuicoes)
 
 # Sliders para escolher número e tamanho das amostras
-m = st.slider('Número de amostras (m):', 2, 1000, 30)
-n = st.slider('Tamanho da amostra (n):', 2, 1000, 30)
+m = st.slider('Número de amostras (m):', 2, 1000, 300)
+n = st.slider('Tamanho da amostra (n):', 2, 1000, 300)
 
 # Parâmetros das distribuições com entrada do usuário
 if distribuicao_selecionada == 'Binomial':
@@ -80,3 +80,15 @@ desvio_padrao_verdadeiro = np.std(amostras, ddof=1) / np.sqrt(n)
 # Plotar histograma das médias amostrais padronizadas e comparar com a distribuição normal padrão (0, 1)
 medias_padronizadas = padronizar_medias(medias, media_verdadeira, desvio_padrao_verdadeiro, n)
 plot_histograms_lado_a_lado(amostras, medias_padronizadas, distribuicao_selecionada)
+
+footer = """
+<hr style="border:1px solid #f1f1f1; margin-bottom: 25px">
+<b>Autores:</b><br>
+Júlio Guerra Domingues (2022431280)<br>
+Samuel Sales Nogueira Viana (2021078455)<br><br>
+
+Trabalho prático da disciplina Probabilidade (EST032) do Departamento de Estatística<br>
+Instituto de Ciências Exatas - Universidade Federal de Minas Gerais
+"""
+
+st.markdown(footer, unsafe_allow_html=True)
